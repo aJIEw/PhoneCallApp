@@ -3,7 +3,7 @@
     package="com.ajiew.phonecallapp">
 
     <uses-permission android:name="android.permission.CALL_PHONE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
@@ -59,21 +59,6 @@
             </intent-filter>
         </service>
 
-        <receiver
-            android:name=".listenphonecall.CallListenerReceiver"
-            android:enabled="true">
-            <intent-filter android:priority="1000">
-                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
-                <action android:name="android.intent.action.PHONE_STATE" />
-            </intent-filter>
-        </receiver>
-        <receiver android:name=".listenphonecall.KeepRunningReceiver">
-            <intent-filter android:priority="1000">
-                <action android:name="android.intent.action.RECEIVE_BOOT_COMPLETED" />
-                <action android:name="android.intent.action.USER_PRESENT" />
-                <action android:name="com.ajiew.phonecallapp.autostart_action" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>

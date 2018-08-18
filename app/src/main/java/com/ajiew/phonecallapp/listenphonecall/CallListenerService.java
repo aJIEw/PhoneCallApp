@@ -32,10 +32,6 @@ import com.ajiew.phonecallapp.R;
  */
 public class CallListenerService extends Service {
 
-    private static final String TAG = CallListenerService.class.getSimpleName();
-
-    public static boolean isRunning;
-
     private View phoneCallView;
     private TextView tvCallNumber;
     private Button btnOpenApp;
@@ -49,18 +45,10 @@ public class CallListenerService extends Service {
     private String callNumber;
     private boolean hasShown;
     private boolean isCallingIn;
-    private boolean isCallingOut;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Log.d(TAG, "支持修改默认电话应用，无需运行本此Service");
-            return; // 如果为了看效果又不想创建 6.0 以下的模拟器可以注释掉这行
-        }
-
-        isRunning = true;
 
         initPhoneStateListener();
 
@@ -129,7 +117,9 @@ public class CallListenerService extends Service {
         // 设置图片格式，效果为背景透明
         params.format = PixelFormat.TRANSLUCENT;
         // 设置 Window flag 为系统级弹框 | 覆盖表层
-        params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
+        params.type = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
+                WindowManager.LayoutParams.TYPE_PHONE;
 
         // 不可聚集（不响应返回键）| 全屏
         params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -174,16 +164,6 @@ public class CallListenerService extends Service {
         });
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && Intent.ACTION_NEW_OUTGOING_CALL.equals(intent.getAction())) {
-            callNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
-            isCallingOut = true;
-        }
-
-        return START_STICKY;
-    }
-
     /**
      * 显示顶级弹框展示通话信息
      */
@@ -201,7 +181,6 @@ public class CallListenerService extends Service {
         if (hasShown) {
             windowManager.removeView(phoneCallView);
             isCallingIn = false;
-            isCallingOut = false;
             hasShown = false;
         }
     }
@@ -225,9 +204,8 @@ public class CallListenerService extends Service {
 
     @Override
     public void onDestroy() {
-        isRunning = false;
-        sendBroadcast(new Intent(KeepRunningReceiver.AUTO_START_RECEIVER));
-
         super.onDestroy();
+
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
     }
 }

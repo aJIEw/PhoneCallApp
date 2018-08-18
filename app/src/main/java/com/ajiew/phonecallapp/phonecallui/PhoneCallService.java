@@ -51,8 +51,7 @@ public class PhoneCallService extends InCallService {
 
         if (callType != null) {
             Call.Details details = call.getDetails();
-            String phoneNumber = details.getHandle().toString().substring(4)
-                    .replaceAll("%20", ""); // 去除拨出电话中的空格
+            String phoneNumber = details.getHandle().getSchemeSpecificPart();
             PhoneCallActivity.actionStart(this, phoneNumber, callType);
         }
     }
