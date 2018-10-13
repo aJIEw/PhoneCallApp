@@ -154,13 +154,10 @@ public class CallListenerService extends Service {
                 .inflate(R.layout.view_phone_call, interceptorLayout);
         tvCallNumber = phoneCallView.findViewById(R.id.tv_call_number);
         btnOpenApp = phoneCallView.findViewById(R.id.btn_open_app);
-        btnOpenApp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                CallListenerService.this.startActivity(intent);
-            }
+        btnOpenApp.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            CallListenerService.this.startActivity(intent);
         });
     }
 

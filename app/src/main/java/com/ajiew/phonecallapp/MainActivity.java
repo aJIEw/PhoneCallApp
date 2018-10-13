@@ -46,41 +46,36 @@ public class MainActivity extends AppCompatActivity {
         switchPhoneCall = findViewById(R.id.switch_default_phone_call);
         switchCallListener = findViewById(R.id.switch_call_listenr);
 
-        switchPhoneCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Android M 以上的系统发起将本应用设为默认电话应用的请求
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-                    if (switchPhoneCall.isChecked()) {
-                        Intent intent = new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER);
-                        intent.putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME,
-                                getPackageName());
-                        startActivity(intent);
-                    } else {
-                        // 取消时跳转到默认设置页面
-                        startActivity(new Intent("android.settings.MANAGE_DEFAULT_APPS_SETTINGS"));
-                    }
+        switchPhoneCall.setOnClickListener(v -> {
+            // Android M 以上的系统发起将本应用设为默认电话应用的请求
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                if (switchPhoneCall.isChecked()) {
+                    Intent intent = new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER);
+                    intent.putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME,
+                            getPackageName());
+                    startActivity(intent);
                 } else {
-                    Toast.makeText(MainActivity.this, "系统版本过低，不支持修改默认电话应用", Toast.LENGTH_SHORT).show();
+                    // 取消时跳转到默认设置页面
+                    startActivity(new Intent("android.settings.MANAGE_DEFAULT_APPS_SETTINGS"));
                 }
-
+            } else {
+                Toast.makeText(MainActivity.this, "系统版本过低，不支持修改默认电话应用", Toast.LENGTH_LONG).show();
+                switchPhoneCall.setChecked(false);
             }
+
         });
 
-        switchCallListener.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // 使用使用 SettingsCompat 检查是否开启了权限
-                if (!SettingsCompat.canDrawOverlays(MainActivity.this)) {
-                    askForDrawOverlay();
-                }
+        switchCallListener.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // 使用使用 SettingsCompat 检查是否开启了权限
+            if (!SettingsCompat.canDrawOverlays(MainActivity.this)) {
+                askForDrawOverlay();
+            }
 
-                Intent callListener = new Intent(MainActivity.this, CallListenerService.class);
-                if (isChecked) {
-                    startService(callListener);
-                } else {
-                    stopService(callListener);
-                }
+            Intent callListener = new Intent(MainActivity.this, CallListenerService.class);
+            if (isChecked) {
+                startService(callListener);
+            } else {
+                stopService(callListener);
             }
         });
     }
@@ -89,19 +84,11 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this)
                 .setTitle("允许显示悬浮框")
                 .setMessage("为了使电话监听服务正常工作，必须允许这项权限")
-                .setPositiveButton("去设置", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        openDrawOverlaySettings();
-                        dialog.dismiss();
-                    }
+                .setPositiveButton("去设置", (dialog, which) -> {
+                    openDrawOverlaySettings();
+                    dialog.dismiss();
                 })
-                .setNegativeButton("稍后再说", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+                .setNegativeButton("稍后再说", (dialog, which) -> dialog.dismiss());
 
         alertDialog.show();
     }
