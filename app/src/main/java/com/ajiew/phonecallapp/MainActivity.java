@@ -2,7 +2,6 @@ package com.ajiew.phonecallapp;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -12,8 +11,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telecom.TelecomManager;
-import android.util.Log;
-import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -32,7 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Switch switchPhoneCall;
 
-    private Switch switchCallListener;
+    private Switch switchListenCall;
+    private CompoundButton.OnCheckedChangeListener switchCallCheckChangeListener;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
         switchPhoneCall = findViewById(R.id.switch_default_phone_call);
-        switchCallListener = findViewById(R.id.switch_call_listenr);
+        switchListenCall = findViewById(R.id.switch_call_listenr);
 
         switchPhoneCall.setOnClickListener(v -> {
             // Android M 以上的系统发起将本应用设为默认电话应用的请求
@@ -59,16 +57,21 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(new Intent("android.settings.MANAGE_DEFAULT_APPS_SETTINGS"));
                 }
             } else {
-                Toast.makeText(MainActivity.this, "系统版本过低，不支持修改默认电话应用", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Android 6.0 以上才支持修改默认电话应用！", Toast.LENGTH_LONG).show();
                 switchPhoneCall.setChecked(false);
             }
 
         });
 
-        switchCallListener.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        // 使用使用 SettingsCompat 检查是否开启了权限
+        switchCallCheckChangeListener = (buttonView, isChecked) -> {
             // 使用使用 SettingsCompat 检查是否开启了权限
-            if (!SettingsCompat.canDrawOverlays(MainActivity.this)) {
+            if (isChecked && !SettingsCompat.canDrawOverlays(MainActivity.this)) {
                 askForDrawOverlay();
+                switchListenCall.setOnCheckedChangeListener(null);
+                switchListenCall.setChecked(false);
+                switchListenCall.setOnCheckedChangeListener(switchCallCheckChangeListener);
+                return;
             }
 
             Intent callListener = new Intent(MainActivity.this, CallListenerService.class);
@@ -77,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 stopService(callListener);
             }
-        });
+        };
+        switchListenCall.setOnCheckedChangeListener(switchCallCheckChangeListener);
     }
 
     private void askForDrawOverlay() {
@@ -122,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         switchPhoneCall.setChecked(isDefaultPhoneCallApp());
-        switchCallListener.setChecked(isServiceRunning(CallListenerService.class));
+        switchListenCall.setChecked(isServiceRunning(CallListenerService.class));
     }
 
     /**

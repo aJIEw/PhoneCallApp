@@ -11,7 +11,6 @@ import android.support.annotation.Nullable;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -156,7 +155,7 @@ public class CallListenerService extends Service {
         btnOpenApp = phoneCallView.findViewById(R.id.btn_open_app);
         btnOpenApp.setOnClickListener(v -> {
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             CallListenerService.this.startActivity(intent);
         });
     }
