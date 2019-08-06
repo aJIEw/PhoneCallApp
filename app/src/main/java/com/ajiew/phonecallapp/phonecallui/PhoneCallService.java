@@ -8,8 +8,11 @@ import android.telecom.InCallService;
 import com.ajiew.phonecallapp.ActivityStack;
 
 /**
- * author: aJIEw
- * description: 监听电话通信状态的服务，实现该类的同时必须提供电话管理的UI
+ * 监听电话通信状态的服务，实现该类的同时必须提供电话管理的 UI
+ *
+ * @author aJIEw
+ * @see PhoneCallActivity
+ * @see android.telecom.InCallService
  */
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class PhoneCallService extends InCallService {

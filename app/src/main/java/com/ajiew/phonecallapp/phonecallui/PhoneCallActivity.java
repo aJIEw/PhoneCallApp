@@ -23,8 +23,9 @@ import static com.ajiew.phonecallapp.listenphonecall.CallListenerService.formatP
 
 
 /**
- * author: aJIEw
- * description: 接打电话界面，使用该 activity 提供电话管理的界面
+ * 提供接打电话的界面，仅支持 Android M (6.0, API 23) 及以上的系统
+ *
+ * @author aJIEw
  */
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class PhoneCallActivity extends AppCompatActivity implements View.OnClickListener {

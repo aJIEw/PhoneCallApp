@@ -23,12 +23,7 @@ import android.widget.TextView;
 import com.ajiew.phonecallapp.MainActivity;
 import com.ajiew.phonecallapp.R;
 
-/**
- * author: aJIEw
- * description: 电话状态变化后运行的服务
- * 这里我在服务中启动了一个系统级弹窗，在通话的时候就显示，
- * 然后在其中放了一个按钮用于打开 PhoneCallApp
- */
+
 public class CallListenerService extends Service {
 
     private View phoneCallView;
@@ -79,9 +74,10 @@ public class CallListenerService extends Service {
                     case TelephonyManager.CALL_STATE_RINGING: // 响铃，来电时触发
                         isCallingIn = true;
                         updateUI();
+                        show();
                         break;
 
-                    case TelephonyManager.CALL_STATE_OFFHOOK: // 摘机，接听或打电话时触发
+                    case TelephonyManager.CALL_STATE_OFFHOOK: // 摘机，接听或拨出电话时触发
                         updateUI();
                         show();
                         break;

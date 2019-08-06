@@ -5,10 +5,7 @@ import android.app.Activity;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * author: aJIEw
- * description: Activity 栈的管理
- */
+
 public class ActivityStack {
 
     private static final ActivityStack INSTANCE = new ActivityStack();

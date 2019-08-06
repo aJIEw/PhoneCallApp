@@ -21,15 +21,13 @@ import java.lang.reflect.Field;
 
 import ezy.assist.compat.SettingsCompat;
 
-/**
- * author: aJIEw
- * description:
- */
+
 public class MainActivity extends AppCompatActivity {
 
     private Switch switchPhoneCall;
 
     private Switch switchListenCall;
+
     private CompoundButton.OnCheckedChangeListener switchCallCheckChangeListener;
 
     @Override
@@ -45,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
         switchListenCall = findViewById(R.id.switch_call_listenr);
 
         switchPhoneCall.setOnClickListener(v -> {
-            // Android M 以上的系统发起将本应用设为默认电话应用的请求
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            // 发起将本应用设为默认电话应用的请求，仅支持 Android M 及以上
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (switchPhoneCall.isChecked()) {
                     Intent intent = new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER);
                     intent.putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME,
@@ -65,9 +63,12 @@ public class MainActivity extends AppCompatActivity {
 
         // 使用使用 SettingsCompat 检查是否开启了权限
         switchCallCheckChangeListener = (buttonView, isChecked) -> {
-            // 使用使用 SettingsCompat 检查是否开启了权限
             if (isChecked && !SettingsCompat.canDrawOverlays(MainActivity.this)) {
+
+                // 请求 悬浮框 权限
                 askForDrawOverlay();
+
+                // 未开启时清除选中状态，同时避免回调
                 switchListenCall.setOnCheckedChangeListener(null);
                 switchListenCall.setChecked(false);
                 switchListenCall.setOnCheckedChangeListener(switchCallCheckChangeListener);
@@ -77,8 +78,10 @@ public class MainActivity extends AppCompatActivity {
             Intent callListener = new Intent(MainActivity.this, CallListenerService.class);
             if (isChecked) {
                 startService(callListener);
+                Toast.makeText(this, "电话监听服务已开启", Toast.LENGTH_SHORT).show();
             } else {
                 stopService(callListener);
+                Toast.makeText(this, "电话监听服务已关闭", Toast.LENGTH_SHORT).show();
             }
         };
         switchListenCall.setOnCheckedChangeListener(switchCallCheckChangeListener);
@@ -87,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
     private void askForDrawOverlay() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this)
                 .setTitle("允许显示悬浮框")
-                .setMessage("为了使电话监听服务正常工作，必须允许这项权限")
+                .setMessage("为了使电话监听服务正常工作，请允许这项权限")
                 .setPositiveButton("去设置", (dialog, which) -> {
                     openDrawOverlaySettings();
                     dialog.dismiss();
@@ -116,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "请在悬浮窗管理中打开权限", Toast.LENGTH_LONG).show();
             }
         } else {
-            // 6.0 以下则直接使用 SettingsCompat 中提供的接口
+            // 6.0 以下则直接使用 SettingsCompat 中提供的接口，只有国产手机上才有
             SettingsCompat.manageDrawOverlays(this);
         }
     }
@@ -130,14 +133,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Android M 以上检查是否是系统默认电话应用
+     * Android M 及以上检查是否是系统默认电话应用
      */
     public boolean isDefaultPhoneCallApp() {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             TelecomManager manger = (TelecomManager) getSystemService(TELECOM_SERVICE);
-            if (manger != null) {
-                String name = manger.getDefaultDialerPackage();
-                return name.equals(getPackageName());
+            if (manger != null && manger.getDefaultDialerPackage() != null) {
+                return manger.getDefaultDialerPackage().equals(getPackageName());
             }
         }
         return false;
@@ -145,11 +147,14 @@ public class MainActivity extends AppCompatActivity {
 
     public boolean isServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        if (manager == null) return false;
+
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
                 return true;
             }
         }
+
         return false;
     }
 }

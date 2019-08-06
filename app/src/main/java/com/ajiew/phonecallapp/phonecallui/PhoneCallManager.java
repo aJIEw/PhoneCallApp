@@ -7,10 +7,7 @@ import android.support.annotation.RequiresApi;
 import android.telecom.Call;
 import android.telecom.VideoProfile;
 
-/**
- * author: aJIEw
- * description: 电话接打的管理类
- */
+
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class PhoneCallManager {
 
