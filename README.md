@@ -18,4 +18,4 @@ This project shows you how to make your app as the default phone call app and ma
 
 ![listen_phone_call](media/listen_phone_call.gif)
 
-原文链接：[安卓代替系统默认电话应用 (Android 6.0+) 与电话状态监听](https://ajiew.github.io/2018/08/11/2018-08-11-android-replace-default-phone-app-and-listen-phone-calls/)
+原文链接：[安卓代替系统默认电话应用 (Android 6.0+) 与电话状态监听](https://ajiew.github.io/2018-08-11-android-replace-default-phone-app-and-listen-phone-calls/)
