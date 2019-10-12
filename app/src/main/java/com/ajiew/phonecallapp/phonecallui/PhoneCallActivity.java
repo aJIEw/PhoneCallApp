@@ -1,14 +1,14 @@
 package com.ajiew.phonecallapp.phonecallui;
 
 import android.annotation.SuppressLint;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.os.PowerManager;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -101,6 +101,39 @@ public class PhoneCallActivity extends AppCompatActivity implements View.OnClick
             tvCallNumberLabel.setText("呼叫号码");
             tvPickUp.setVisibility(View.GONE);
             phoneCallManager.openSpeaker();
+        }
+
+        // turn on and unlock screen
+        wakeUpAndUnlock();
+    }
+
+    public void wakeUpAndUnlock() {
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+
+        if (pm == null) {
+            return;
+        }
+
+        boolean screenOn = pm.isScreenOn();
+        if (!screenOn) {
+            PowerManager.WakeLock wl = pm.newWakeLock(
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP, getPackageName() + "TAG");
+            wl.acquire(10000);
+            wl.release();
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true);
+            setTurnScreenOn(true);
+            KeyguardManager keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+            if (keyguardManager == null) {
+                return;
+            }
+            keyguardManager.requestDismissKeyguard(this, null);
+        } else {
+            this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
     }
 
