@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telecom.TelecomManager;
+import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -18,8 +19,6 @@ import android.widget.Toast;
 import com.ajiew.phonecallapp.listenphonecall.CallListenerService;
 
 import java.lang.reflect.Field;
-
-import ezy.assist.compat.SettingsCompat;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -61,10 +60,11 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        // 使用使用 SettingsCompat 检查是否开启了权限
+        // 检查是否开启了权限
         switchCallCheckChangeListener = (buttonView, isChecked) -> {
-            if (isChecked && !SettingsCompat.canDrawOverlays(MainActivity.this)) {
-
+            if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                    && !Settings.canDrawOverlays(MainActivity.this)
+            ) {
                 // 请求 悬浮框 权限
                 askForDrawOverlay();
 
@@ -88,15 +88,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void askForDrawOverlay() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this)
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setTitle("允许显示悬浮框")
                 .setMessage("为了使电话监听服务正常工作，请允许这项权限")
                 .setPositiveButton("去设置", (dialog, which) -> {
                     openDrawOverlaySettings();
                     dialog.dismiss();
                 })
-                .setNegativeButton("稍后再说", (dialog, which) -> dialog.dismiss());
+                .setNegativeButton("稍后再说", (dialog, which) -> dialog.dismiss())
+                .create();
 
+        //noinspection ConstantConditions
+        alertDialog.getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
         alertDialog.show();
     }
 
@@ -118,9 +123,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Toast.makeText(this, "请在悬浮窗管理中打开权限", Toast.LENGTH_LONG).show();
             }
-        } else {
-            // 6.0 以下则直接使用 SettingsCompat 中提供的接口，只有国产手机上才有
-            SettingsCompat.manageDrawOverlays(this);
         }
     }
 

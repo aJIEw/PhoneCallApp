@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -23,7 +22,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".phonecallui.PhoneCallActivity">
+        <activity
+            android:name=".phonecallui.PhoneCallActivity"
+            android:launchMode="singleInstance">
             <!-- region provides ongoing call UI -->
             <intent-filter>
                 <action android:name="android.intent.action.DIAL" />
