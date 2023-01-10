@@ -1,11 +1,13 @@
 package com.ajiew.phonecallapp.phonecallui;
 
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.telecom.Call;
 import android.telecom.InCallService;
 
+import androidx.annotation.RequiresApi;
+
 import com.ajiew.phonecallapp.ActivityStack;
+
 
 /**
  * 监听电话通信状态的服务，实现该类的同时必须提供电话管理的 UI
@@ -17,7 +19,7 @@ import com.ajiew.phonecallapp.ActivityStack;
 @RequiresApi(api = Build.VERSION_CODES.M)
 public class PhoneCallService extends InCallService {
 
-    private Call.Callback callback = new Call.Callback() {
+    private final Call.Callback callback = new Call.Callback() {
         @Override
         public void onStateChanged(Call call, int state) {
             super.onStateChanged(call, state);

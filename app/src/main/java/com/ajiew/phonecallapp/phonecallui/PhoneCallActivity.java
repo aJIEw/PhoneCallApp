@@ -1,23 +1,24 @@
 package com.ajiew.phonecallapp.phonecallui;
 
+import static com.ajiew.phonecallapp.listenphonecall.CallListenerService.formatPhoneNumber;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.ajiew.phonecallapp.ActivityStack;
 import com.ajiew.phonecallapp.R;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static com.ajiew.phonecallapp.listenphonecall.CallListenerService.formatPhoneNumber;
 
 
 /**

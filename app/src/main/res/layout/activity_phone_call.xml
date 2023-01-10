@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,6 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_above="@+id/tv_call_number"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
             android:text="来电号码"
             android:textColor="@android:color/white"
@@ -27,11 +29,12 @@
             android:id="@+id/tv_call_number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
             android:gravity="center"
             android:textAlignment="center"
             android:textColor="@android:color/white"
             android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_centerInParent="true"
             tools:text="133-9527-9527" />
 
     </RelativeLayout>
@@ -48,6 +51,8 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="24dp"
             android:text="通话中：01:33"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
