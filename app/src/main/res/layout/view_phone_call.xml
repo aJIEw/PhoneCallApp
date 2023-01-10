@@ -14,7 +14,7 @@
         android:layout_marginTop="30dp"
         android:gravity="center"
         android:textAlignment="center"
-        android:textColor="@color/colorAccent"
+        android:textColor="@android:color/white"
         android:textSize="18sp"
         tools:text="133-8892-9579" />
 
@@ -22,6 +22,7 @@
         android:id="@+id/btn_open_app"
         style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"
         android:layout_width="match_parent"
+        android:textColor="@android:color/white"
         android:layout_height="wrap_content"
         android:layout_below="@id/tv_call_number"
         android:gravity="center"

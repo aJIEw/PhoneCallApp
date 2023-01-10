@@ -1,8 +1,13 @@
 package com.ajiew.phonecallapp;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,9 +18,12 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.ajiew.phonecallapp.listenphonecall.CallListenerService;
 
@@ -24,11 +32,21 @@ import java.lang.reflect.Field;
 
 public class MainActivity extends AppCompatActivity {
 
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch switchPhoneCall;
 
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch switchListenCall;
 
     private CompoundButton.OnCheckedChangeListener switchCallCheckChangeListener;
+
+    private final ActivityResultLauncher<Intent> dialerRequestLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Toast.makeText(MainActivity.this, getString(R.string.app_name) + " 已成为默认电话应用",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,16 +64,23 @@ public class MainActivity extends AppCompatActivity {
             // 发起将本应用设为默认电话应用的请求，仅支持 Android M 及以上
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (switchPhoneCall.isChecked()) {
-                    Intent intent = new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER);
-                    intent.putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME,
-                            getPackageName());
-                    startActivity(intent);
+                    // Android 10 之后需要通过 RoleManager 修改默认电话应用
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        RoleManager roleManager = (RoleManager) getSystemService(Context.ROLE_SERVICE);
+                        Intent intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER);
+                        dialerRequestLauncher.launch(intent);
+                    } else {
+                        Intent intent = new Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER);
+                        intent.putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, getPackageName());
+                        startActivity(intent);
+                    }
                 } else {
                     // 取消时跳转到默认设置页面
                     startActivity(new Intent("android.settings.MANAGE_DEFAULT_APPS_SETTINGS"));
                 }
             } else {
-                Toast.makeText(MainActivity.this, "Android 6.0 以上才支持修改默认电话应用！", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Android 6.0 以上才支持修改默认电话应用！", Toast.LENGTH_LONG)
+                     .show();
                 switchPhoneCall.setChecked(false);
             }
 
@@ -64,8 +89,7 @@ public class MainActivity extends AppCompatActivity {
         // 检查是否开启了权限
         switchCallCheckChangeListener = (buttonView, isChecked) -> {
             if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                    && !Settings.canDrawOverlays(MainActivity.this)
-            ) {
+                    && !Settings.canDrawOverlays(MainActivity.this)) {
                 // 请求 悬浮框 权限
                 askForDrawOverlay();
 
@@ -73,6 +97,13 @@ public class MainActivity extends AppCompatActivity {
                 switchListenCall.setOnCheckedChangeListener(null);
                 switchListenCall.setChecked(false);
                 switchListenCall.setOnCheckedChangeListener(switchCallCheckChangeListener);
+                return;
+            }
+
+            if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "缺少获取电话状态权限", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -152,7 +183,8 @@ public class MainActivity extends AppCompatActivity {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         if (manager == null) return false;
 
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(
+                Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
                 return true;
             }
