@@ -18,6 +18,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -100,9 +102,9 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                    ContextCompat.checkSelfPermission(this,
-                            Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+            boolean granted = ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
+            if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !granted) {
                 Toast.makeText(this, "缺少获取电话状态权限", Toast.LENGTH_SHORT).show();
                 return;
             }

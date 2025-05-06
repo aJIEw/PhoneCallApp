@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -43,7 +44,7 @@ public class PhoneCallActivity extends AppCompatActivity implements View.OnClick
     private int callingTime;
 
     public static void actionStart(Context context, String phoneNumber,
-                                   PhoneCallService.CallType callType) {
+            PhoneCallService.CallType callType) {
         Intent intent = new Intent(context, PhoneCallActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Intent.EXTRA_MIME_TYPES, callType);
@@ -53,6 +54,7 @@ public class PhoneCallActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_phone_call);
 

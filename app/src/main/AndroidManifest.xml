@@ -2,9 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <queries>
+        <intent>
+            <action android:name="android.telephony.action.PHONE_STATE" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -26,7 +36,8 @@
         <activity
             android:name=".phonecallui.PhoneCallActivity"
             android:launchMode="singleInstance"
-            android:exported="true">
+            android:exported="true"
+            tools:targetApi="23">
             <!-- region provides ongoing call UI -->
             <intent-filter>
                 <action android:name="android.intent.action.DIAL" />
@@ -50,7 +61,8 @@
         <service
             android:name=".phonecallui.PhoneCallService"
             android:permission="android.permission.BIND_INCALL_SERVICE"
-            android:exported="false">
+            android:exported="false"
+            tools:targetApi="23">
             <meta-data
                 android:name="android.telecom.IN_CALL_SERVICE_UI"
                 android:value="true" />

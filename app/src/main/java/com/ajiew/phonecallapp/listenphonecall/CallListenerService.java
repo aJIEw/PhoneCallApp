@@ -8,6 +8,7 @@ import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
 import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -34,8 +35,7 @@ public class CallListenerService extends Service {
     private WindowManager windowManager;
     private WindowManager.LayoutParams params;
 
-    private PhoneStateListener phoneStateListener;
-    private TelephonyManager telephonyManager;
+    private PhoneStateListenerCompat phoneStateListenerCompat;
 
     private String callNumber;
     private boolean hasShown;
@@ -60,13 +60,9 @@ public class CallListenerService extends Service {
      * 初始化来电状态监听器
      */
     private void initPhoneStateListener() {
-        phoneStateListener = new PhoneStateListener() {
+        phoneStateListenerCompat = new PhoneStateListenerCompat() {
             @Override
-            public void onCallStateChanged(int state, String incomingNumber) {
-                super.onCallStateChanged(state, incomingNumber);
-
-                callNumber = incomingNumber;
-
+            public void onCallStateChanged(int state) {
                 switch (state) {
                     case TelephonyManager.CALL_STATE_IDLE: // 待机，即无电话时，挂断时触发
                         dismiss();
@@ -89,13 +85,7 @@ public class CallListenerService extends Service {
                 }
             }
         };
-
-        // 设置来电监听器
-        telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        if (telephonyManager != null) {
-            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-        }
-
+        phoneStateListenerCompat.startListening(this);
     }
 
     private void initPhoneCallView() {
@@ -199,6 +189,6 @@ public class CallListenerService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+        phoneStateListenerCompat.stopListening(this);
     }
 }
