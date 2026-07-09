@@ -1,5 +1,6 @@
 package com.ajiew.phonecallapp.phonecallui;
 
+import android.net.Uri;
 import android.os.Build;
 import android.telecom.Call;
 import android.telecom.InCallService;
@@ -42,6 +43,9 @@ public class PhoneCallService extends InCallService {
     @Override
     public void onCallAdded(Call call) {
         super.onCallAdded(call);
+        if (call == null) {
+            return;
+        }
 
         call.registerCallback(callback);
         PhoneCallManager.call = call;
@@ -55,8 +59,7 @@ public class PhoneCallService extends InCallService {
         }
 
         if (callType != null) {
-            Call.Details details = call.getDetails();
-            String phoneNumber = details.getHandle().getSchemeSpecificPart();
+            String phoneNumber = getPhoneNumber(call);
             PhoneCallActivity.actionStart(this, phoneNumber, callType);
         }
     }
@@ -64,9 +67,27 @@ public class PhoneCallService extends InCallService {
     @Override
     public void onCallRemoved(Call call) {
         super.onCallRemoved(call);
+        if (call == null) {
+            PhoneCallManager.call = null;
+            return;
+        }
 
         call.unregisterCallback(callback);
         PhoneCallManager.call = null;
+    }
+
+    private String getPhoneNumber(Call call) {
+        Call.Details details = call.getDetails();
+        if (details == null) {
+            return null;
+        }
+
+        Uri handle = details.getHandle();
+        if (handle == null) {
+            return null;
+        }
+
+        return handle.getSchemeSpecificPart();
     }
 
     public enum CallType {

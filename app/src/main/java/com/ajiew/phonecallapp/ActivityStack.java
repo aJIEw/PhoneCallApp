@@ -3,6 +3,7 @@ package com.ajiew.phonecallapp;
 import android.app.Activity;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -10,14 +11,16 @@ public class ActivityStack {
 
     private static final ActivityStack INSTANCE = new ActivityStack();
 
-    private List<Activity> activities = new ArrayList<>();
+    private final List<Activity> activities = new ArrayList<>();
 
     public static ActivityStack getInstance() {
         return INSTANCE;
     }
 
     public void addActivity(Activity activity) {
-        activities.add(activity);
+        if (activity != null) {
+            activities.add(activity);
+        }
     }
 
     public Activity getTopActivity() {
@@ -41,18 +44,27 @@ public class ActivityStack {
     }
 
     public void finishActivity(Class activityClass) {
-        for (Activity activity : activities) {
-            if (activity.getClass().equals(activityClass)) {
-                finishActivity(activity);
+        if (activityClass == null) {
+            return;
+        }
+
+        Iterator<Activity> iterator = activities.iterator();
+        while (iterator.hasNext()) {
+            Activity activity = iterator.next();
+            if (activity != null && activity.getClass().equals(activityClass)) {
+                iterator.remove();
+                activity.finish();
             }
         }
     }
 
     public void finishAllActivity() {
-        if (!activities.isEmpty()) {
-            for (Activity activity : activities) {
+        Iterator<Activity> iterator = activities.iterator();
+        while (iterator.hasNext()) {
+            Activity activity = iterator.next();
+            iterator.remove();
+            if (activity != null) {
                 activity.finish();
-                activities.remove(activity);
             }
         }
     }

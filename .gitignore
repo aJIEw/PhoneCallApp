@@ -1,11 +1,13 @@
 *.iml
 .gradle
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
+/.idea/
 .DS_Store
 /build
 /captures
 .externalNativeBuild
+
+# Agent and Skills related
+AGENTS.md
+skills-lock.json
+.agents/private/**

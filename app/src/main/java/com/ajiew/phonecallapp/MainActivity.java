@@ -49,6 +49,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+    private final ActivityResultLauncher<String> phoneStatePermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) {
+                    if (switchListenCall != null && switchListenCall.isChecked()) {
+                        startCallListenerService();
+                    }
+                } else {
+                    Toast.makeText(this, "缺少获取电话状态权限", Toast.LENGTH_SHORT).show();
+                    setSwitchListenCallChecked(false);
+                }
+            });
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -69,6 +81,12 @@ public class MainActivity extends AppCompatActivity {
                     // Android 10 之后需要通过 RoleManager 修改默认电话应用
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                         RoleManager roleManager = (RoleManager) getSystemService(Context.ROLE_SERVICE);
+                        if (roleManager == null
+                                || !roleManager.isRoleAvailable(RoleManager.ROLE_DIALER)) {
+                            Toast.makeText(this, "当前设备不支持设置默认电话应用", Toast.LENGTH_SHORT).show();
+                            switchPhoneCall.setChecked(false);
+                            return;
+                        }
                         Intent intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER);
                         dialerRequestLauncher.launch(intent);
                     } else {
@@ -105,19 +123,37 @@ public class MainActivity extends AppCompatActivity {
             boolean granted = ContextCompat.checkSelfPermission(this,
                     Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED;
             if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !granted) {
-                Toast.makeText(this, "缺少获取电话状态权限", Toast.LENGTH_SHORT).show();
+                phoneStatePermissionLauncher.launch(Manifest.permission.READ_PHONE_STATE);
                 return;
             }
 
-            Intent callListener = new Intent(MainActivity.this, CallListenerService.class);
             if (isChecked) {
-                startService(callListener);
-                Toast.makeText(this, "电话监听服务已开启", Toast.LENGTH_SHORT).show();
+                startCallListenerService();
             } else {
-                stopService(callListener);
-                Toast.makeText(this, "电话监听服务已关闭", Toast.LENGTH_SHORT).show();
+                stopCallListenerService();
             }
         };
+        switchListenCall.setOnCheckedChangeListener(switchCallCheckChangeListener);
+    }
+
+    private void startCallListenerService() {
+        Intent callListener = new Intent(MainActivity.this, CallListenerService.class);
+        startService(callListener);
+        Toast.makeText(this, "电话监听服务已开启", Toast.LENGTH_SHORT).show();
+    }
+
+    private void stopCallListenerService() {
+        Intent callListener = new Intent(MainActivity.this, CallListenerService.class);
+        stopService(callListener);
+        Toast.makeText(this, "电话监听服务已关闭", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setSwitchListenCallChecked(boolean checked) {
+        if (switchListenCall == null) {
+            return;
+        }
+        switchListenCall.setOnCheckedChangeListener(null);
+        switchListenCall.setChecked(checked);
         switchListenCall.setOnCheckedChangeListener(switchCallCheckChangeListener);
     }
 
@@ -132,11 +168,12 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("稍后再说", (dialog, which) -> dialog.dismiss())
                 .create();
 
-        //noinspection ConstantConditions
-        alertDialog.getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
         alertDialog.show();
+        if (alertDialog.getWindow() != null) {
+            alertDialog.getWindow().setFlags(
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        }
     }
 
     /**
@@ -187,7 +224,8 @@ public class MainActivity extends AppCompatActivity {
 
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(
                 Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
+            if (service != null && service.service != null
+                    && serviceClass.getName().equals(service.service.getClassName())) {
                 return true;
             }
         }
